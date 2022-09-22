@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { render } from 'react-dom';
 import { AgGridReact } from 'ag-grid-react';
+import { } from 'ag-grid-enterprise';
 
 import 'ag-grid-community/dist/styles/ag-grid.css';
 import 'ag-grid-community/dist/styles/ag-theme-alpine.css';
@@ -18,9 +19,9 @@ export const Grid = () => {
     ]);
    
     const [columnDefs] = useState([
-       { field: 'make' },
-       { field: 'model' },
-       { field: 'price' }
+       { field: 'make', editable: true },
+       { field: 'model', editable : true },
+       { field: 'price', editable : true }
     ]);
 
     return (
