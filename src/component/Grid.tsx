@@ -5,32 +5,30 @@ import { AgGridReact } from 'ag-grid-react';
 import 'ag-grid-community/dist/styles/ag-grid.css';
 import 'ag-grid-community/dist/styles/ag-theme-alpine.css';
 
-// export type GridProps = {
-//     ref : any,
-// }
+export type GridProps = {
+    rowData: any[]
+}
 
-const Grid =(props : any , ref :any)  => {
+const Grid =(props : GridProps , ref :any)  => {
     const gridRef = useRef<AgGridReact>(null);
-
+    const { rowData } = props;
     useImperativeHandle( ref, () => ({
-        getGridApi : () => {
-            return gridRef.current;
+        getCurrentGridApi : () => {
+            console.warn(gridRef.current);
+            return gridRef.current?.api;
         },
+        getCurrentColumnApi: () => {
+            return gridRef.current?.columnApi;
+        }
     }));
     
-    const [rowData] = useState([
-       {make: "Toyota", model: "Celica", price: 35000},
-       {make: "Ford", model: "Mondeo", price: 32000},
-       {make: "Porsche", model: "Boxster", price: 72000}
-    ]);
-
     const onCellValueChanged = (event : any) =>{
-        console.log('gridRef.current --->', gridRef.current);
+        console.log('gridRef.current --->', gridRef.current?.api);
     }
    
     const [columnDefs] = useState([
-       { field: 'make' , editable:true, onCellValueChanged: (params: any ) => {console.log('column', params)} },
-       { field: 'model', editable:true, },
+       { checkboxSelection:true, field: 'make' , editable:true, onCellValueChanged: (params: any ) => {console.log('column', params)} },
+       { field: 'model', editable: false, },
        { field: 'price', editable:true, }
     ]);
 
@@ -38,7 +36,9 @@ const Grid =(props : any , ref :any)  => {
         <div className="ag-theme-alpine" style={{height: 400, width: 600}}>
            <AgGridReact
                ref={gridRef}
-               rowData={rowData}
+               rowData={rowData.length > 0 ? rowData : []}
+               rowSelection={'multiple'}
+               singleClickEdit={false}
                onCellValueChanged={onCellValueChanged}
                columnDefs={columnDefs}>
            </AgGridReact>
