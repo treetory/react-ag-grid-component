@@ -1,6 +1,6 @@
 import "./styles.css";
 import { AgGrid } from "./component/Grid";
-import {useRef} from "react";
+import {useRef, useState} from "react";
 
 
 export default function App() {
@@ -26,9 +26,22 @@ export default function App() {
         );
     }
     
-    const setColumnDef = () => {
-        
+    const setEditable = (isEditable: boolean, cols: string[]): boolean  => {
+        const grid = gridRef.current?.getCurrentGridApi()
+        const columnDefs: any[] = grid.getColumnDefs();
+        // const newColumDef = columnDefs.filter(
+        //     columnDef => 
+        //     cols.findIndex(col => col === columnDef.field) > 0)
+        //     .every(columnDef => columnDef.editable = isEditable)
+        columnDefs.forEach(function (colDef) {
+            console.warn(colDef);
+            colDef.editable = isEditable;
+        });
+        grid.setColumnDefs(columnDefs);
+        return isEditable;
     }
+    
+    let [isEditable] = useState(true);
     
     return (
     <div className="App">
@@ -39,7 +52,9 @@ export default function App() {
         />
         <span>
             <button onClick={applyTransaction}>applyTransaction</button>
-            <button onClick={setColumnDef}>setColumnDef</button>
+            <button onClick={() => {
+                isEditable = setEditable(isEditable ? false : true, []);    
+            }}>setEditable</button>
         </span>
     </div>
   );

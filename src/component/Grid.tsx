@@ -1,5 +1,6 @@
-import React, {useState, useRef, FC, useImperativeHandle} from 'react';
+import React, {useState, useRef, FC, useImperativeHandle, useMemo} from 'react';
 import { AgGridReact } from 'ag-grid-react';
+import 'ag-grid-enterprise'
 
 
 import 'ag-grid-community/dist/styles/ag-grid.css';
@@ -31,6 +32,19 @@ const Grid =(props : GridProps , ref :any)  => {
        { field: 'model', editable: false, },
        { field: 'price', editable:true, }
     ]);
+    
+    const statusBar ={
+            statusPanels: [
+                { statusPanel: 'agTotalAndFilteredRowCountComponent', align: 'left' },
+                // { statusPanel: 'agTotalRowCountComponent', align: 'center' },
+                // { statusPanel: 'agFilteredRowCountComponent' },
+                { statusPanel: 'agSelectedRowCountComponent', align: 'left' },
+                // { statusPanel: 'agAggregationComponent' },
+            ]
+    };
+           
+        
+        
 
     return (
         <div className="ag-theme-alpine" style={{height: 400, width: 600}}>
@@ -39,6 +53,7 @@ const Grid =(props : GridProps , ref :any)  => {
                rowData={rowData.length > 0 ? rowData : []}
                rowSelection={'multiple'}
                singleClickEdit={false}
+               statusBar={statusBar}
                onCellValueChanged={onCellValueChanged}
                columnDefs={columnDefs}>
            </AgGridReact>
