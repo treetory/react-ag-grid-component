@@ -10,7 +10,8 @@
     "react-scripts": "4.0.3",
     "ag-grid-community": "^27.3.0",
     "ag-grid-enterprise": "^27.3.0",
-    "ag-grid-react": "^27.3.0"
+    "ag-grid-react": "^27.3.0",
+    "env-var": "^7.3.0"
   },
   "devDependencies": {
     "@types/react": "18.0.0",
