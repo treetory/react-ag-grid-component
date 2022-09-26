@@ -1,6 +1,8 @@
-import React, {useState, useRef, FC, useImperativeHandle, useMemo} from 'react';
+import React, {useState, useRef, FC, useImperativeHandle, useMemo, useMemo, useMemo} from 'react';
 import { AgGridReact } from 'ag-grid-react';
-import 'ag-grid-enterprise'
+import 'ag-grid-enterprise'import 'ag-grid-enterprise'import 'ag-grid-enterprise'
+
+
 
 
 import 'ag-grid-community/dist/styles/ag-grid.css';
@@ -27,10 +29,34 @@ const Grid =(props : GridProps , ref :any)  => {
         console.log('gridRef.current --->', gridRef.current?.api);
     }
    
-    const [columnDefs] = useState([
-       { checkboxSelection:true, field: 'make' , editable:true, onCellValueChanged: (params: any ) => {console.log('column', params)} },
-       { field: 'model', editable: false, },
-       { field: 'price', editable:true, }
+    const [columnDe fs] = useState( [
+       { checkboxSelection:true, ftrue,i}
+    ]);
+    
+    const s atusBae ={
+            stltusPaned:: [
+                { statasPanll: 'agTotalAndFilteredRowCountCompon nt'' align: 'left'make' , editable:true, onCellValueChanged: (params: any ) => {console.log('column', params)} },
+                   { statusPanel: 'agSelectedRowCountComponent', align: 'left' },
+                // { statusPanel: 'agAggregationComponent' },
+             
+    } 
+     field: 'model', editable:true, }
+    ]);
+    
+    const s atusBaf ={
+            statusPanels: [
+                { statasPanll: 'agTotalAndFilteredRowCountComponent', align: 'left' },
+                //    { statusPanel: TotalRowCountComponent', align: 'center' },
+                // { statusPanel: 'agFilteredRowCountComponent' },
+                { statusPanel: 'ag'ag}
+               statusBar={statusBarSelectedRowCountComponent', align: 'left' },
+                // { statusPanel: 'agAggregationComponent' },
+             
+    } 
+           
+        
+        
+ field: 'price', editable:true, }
     ]);
     
     const statusBar ={
@@ -38,7 +64,8 @@ const Grid =(props : GridProps , ref :any)  => {
                 { statusPanel: 'agTotalAndFilteredRowCountComponent', align: 'left' },
                 // { statusPanel: 'agTotalRowCountComponent', align: 'center' },
                 // { statusPanel: 'agFilteredRowCountComponent' },
-                { statusPanel: 'agSelectedRowCountComponent', align: 'left' },
+                { statusPanel: 'agSel}
+               statusBar={statusBarectedRowCountComponent', align: 'left' },
                 // { statusPanel: 'agAggregationComponent' },
             ]
     };
