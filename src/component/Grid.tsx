@@ -33,19 +33,13 @@ const Grid =(props : GridProps , ref :any)  => {
        { field: 'price', editable:true, }
     ]);
     
-    const statusBar ={
-            statusPanels: [
-                { statusPanel: 'agTotalAndFilteredRowCountComponent', align: 'left' },
-                // { statusPanel: 'agTotalRowCountComponent', align: 'center' },
-                // { statusPanel: 'agFilteredRowCountComponent' },
-                { statusPanel: 'agSelectedRowCountComponent', align: 'left' },
-                // { statusPanel: 'agAggregationComponent' },
-            ]
+    const statusBar = {
+        statusPanels: [
+            { statusPanel: 'agTotalAndFilteredRowCountComponent', align: 'left' },
+            { statusPanel: 'agSelectedRowCountComponent', align: 'left' },
+        ]
     };
            
-        
-        
-
     return (
         <div className="ag-theme-alpine" style={{height: 400, width: 600}}>
            <AgGridReact
