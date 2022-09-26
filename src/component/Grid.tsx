@@ -1,14 +1,12 @@
 import React, { useState, useRef, useImperativeHandle, useMemo } from 'react';
 import { AgGridReact } from 'ag-grid-react';
 import 'ag-grid-enterprise';
-import { get } from 'env-var';
 import { LicenseManager } from 'ag-grid-enterprise';
 
 import 'ag-grid-community/dist/styles/ag-grid.css';
 import 'ag-grid-community/dist/styles/ag-theme-alpine.css';
-
-const LICENSE_KEY: string = get('AGGRID_LICENSE_KEY').required().asString();
-LicenseManager.setLicenseKey(LICENSE_KEY);
+console.warn(process.env);
+// LicenseManager.setLicenseKey(LICENSE_KEY);
 
 export type GridProps = {
     rowData: any[]
