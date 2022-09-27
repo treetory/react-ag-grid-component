@@ -5,15 +5,16 @@
   "keywords": [],
   "main": "src/index.tsx",
   "dependencies": {
-    "react": "18.0.0",
-    "react-dom": "18.0.0",
-    "react-scripts": "4.0.3",
     "ag-grid-community": "^27.3.0",
     "ag-grid-enterprise": "^27.3.0",
     "ag-grid-react": "^27.3.0",
+    "dexie": "^3.2.2",
+    "dexie-react-hooks": "^1.1.1",
     "env-cmd": "^10.1.0",
     "env-var": "^7.3.0",
-    "dexie": "^3.2.2"
+    "react": "18.0.0",
+    "react-dom": "18.0.0",
+    "react-scripts": "4.0.3"
   },
   "devDependencies": {
     "@types/react": "18.0.0",
