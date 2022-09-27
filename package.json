@@ -12,7 +12,8 @@
     "ag-grid-enterprise": "^27.3.0",
     "ag-grid-react": "^27.3.0",
     "env-cmd": "^10.1.0",
-    "env-var": "^7.3.0"
+    "env-var": "^7.3.0",
+    "dexie": "^3.2.2"
   },
   "devDependencies": {
     "@types/react": "18.0.0",
