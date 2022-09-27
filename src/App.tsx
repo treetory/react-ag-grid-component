@@ -1,16 +1,12 @@
 import "./styles.css";
 import { AgGrid } from "./component/Grid";
-import React, { useRef, useState } from "react";
+import React, { useRef, useState, useEffect } from "react";
+import { GridReadyEvent } from "ag-grid-community";
+import { CellChangedEvent } from "ag-grid-community/dist/lib/entities/rowNode";
 
 export default function App() {
 
     const gridRef = useRef<any>(null);
-
-    const rowData: any[] = [
-        { make: "Toyota", model: "Celica", price: 35000 },
-        { make: "Ford", model: "Mondeo", price: 32000 },
-        { make: "Porsche", model: "Boxster", price: 72000 }
-    ];
 
     const columnDefs = [
         { checkboxSelection: true, field: 'make', editable: true, onCellValueChanged: (params: any) => { console.log('column', params) } },
@@ -33,7 +29,7 @@ export default function App() {
     }
 
     const toggleEditable = (cols: string[]): void => {
-        const grid = gridRef.current?.getCurrentGridApi()
+        const grid = gridRef.current?.getCurrentGridApi();
         const _columnDefs: any[] = grid.getColumnDefs();
         _columnDefs.map(colDef => {
             if (cols.includes(colDef.field))
@@ -43,20 +39,40 @@ export default function App() {
         grid.setColumnDefs(_columnDefs);
     }
 
+    const onGridReady = (e: GridReadyEvent) => {
+        const grid = gridRef.current?.getCurrentGridApi();
+        grid.setRowData([
+            { make: "Toyota", model: "Celica", price: 35000 },
+            { make: "Ford", model: "Mondeo", price: 32000 },
+            { make: "Porsche", model: "Boxster", price: 72000 }
+        ]);
+    }
+
+    const onCellValueChanged = (e: CellChangedEvent) => {
+        console.warn(e);
+    }
+
+    useEffect(() => {
+
+    }, [])
+
     return (
         <div className="App">
             <h1>Hello AG Grid</h1>
             <AgGrid
                 ref={gridRef}
-                rowData={rowData}
                 columnDefs={columnDefs}
+                onGridReady={onGridReady}
+                onCellValueChanged={onCellValueChanged}
             />
-            <span>
-                <button onClick={applyTransaction}>applyTransaction</button>
-                <button onClick={() => {
-                    toggleEditable(['make']);
-                }}>toggleEditable</button>
-            </span>
+            <div>
+                <span>
+                    <button onClick={applyTransaction}>applyTransaction</button>
+                    <button onClick={() => {
+                        toggleEditable(['make']);
+                    }}>toggleEditable</button>
+                </span>
+            </div>
         </div>
     );
 }

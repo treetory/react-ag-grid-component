@@ -6,18 +6,22 @@ import { LicenseManager } from 'ag-grid-enterprise';
 
 import 'ag-grid-community/dist/styles/ag-grid.css';
 import 'ag-grid-community/dist/styles/ag-theme-alpine.css';
+import { GridReadyEvent } from 'ag-grid-community';
+import { CellChangedEvent } from 'ag-grid-community/dist/lib/entities/rowNode';
 
 const LICENSE_KEY: string = env.get('REACT_APP_AGGRID_LICENSE_KEY').required().asString();
 LicenseManager.setLicenseKey(LICENSE_KEY);
 
 export type GridProps = {
-    rowData: any[],
-    columnDefs: any[]
+    rowData?: any[],
+    columnDefs: any[],
+    onGridReady: (e: GridReadyEvent) => void,
+    onCellValueChanged?: (e: CellChangedEvent) => void
 }
 
 const Grid = (props: GridProps, ref: any) => {
 
-    const { rowData, columnDefs } = props;
+    const { rowData, columnDefs, onGridReady, onCellValueChanged } = props;
 
     const gridRef = useRef<AgGridReact>(null);
 
@@ -30,10 +34,6 @@ const Grid = (props: GridProps, ref: any) => {
         }
     }));
 
-    const onCellValueChanged = (event: any) => {
-        console.log('gridRef.current --->', gridRef.current?.api);
-    }
-
     const statusBar = {
         statusPanels: [
             { statusPanel: 'agTotalAndFilteredRowCountComponent', align: 'left' },
@@ -45,12 +45,14 @@ const Grid = (props: GridProps, ref: any) => {
         <div className="ag-theme-alpine" style={{ height: 400, width: 600 }}>
             <AgGridReact
                 ref={gridRef}
-                rowData={rowData.length > 0 ? rowData : []}
+                rowData={[]}
                 rowSelection={'multiple'}
                 singleClickEdit={true}
                 statusBar={statusBar}
                 onCellValueChanged={onCellValueChanged}
-                columnDefs={columnDefs}>
+                columnDefs={columnDefs}
+                onGridReady={onGridReady}
+            >
             </AgGridReact>
         </div>
     )
