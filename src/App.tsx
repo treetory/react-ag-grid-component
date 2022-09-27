@@ -32,17 +32,16 @@ export default function App() {
         );
     }
 
-    const toggleEditable = (isEditable: boolean, cols: string[]): void => {
+    const toggleEditable = (cols: string[]): void => {
         const grid = gridRef.current?.getCurrentGridApi()
         const _columnDefs: any[] = grid.getColumnDefs();
-        _columnDefs.forEach(function (colDef) {
-            console.warn(colDef);
-            colDef.editable = isEditable;
+        _columnDefs.map(colDef => {
+            if (cols.includes(colDef.field))
+                colDef.editable = colDef.editable === true ? false : true;
+            return colDef;
         });
         grid.setColumnDefs(_columnDefs);
     }
-
-    let [isEditable, setEditable] = useState(true);
 
     return (
         <div className="App">
@@ -55,8 +54,7 @@ export default function App() {
             <span>
                 <button onClick={applyTransaction}>applyTransaction</button>
                 <button onClick={() => {
-                    setEditable(isEditable === true ? false : true);
-                    toggleEditable(isEditable, []);
+                    toggleEditable(['make']);
                 }}>toggleEditable</button>
             </span>
         </div>
