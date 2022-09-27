@@ -6,7 +6,7 @@ import { AgGrid } from "./component/Grid";
 
 import Dexie, { Table } from 'dexie';
 interface MockUp {
-    rowId?: number;     // rowId is only use for indexdb. it's a indexed key.
+    rowId?: number;     // rowId is only use for indexeddb. it's a indexed key.
     make?: string;
     model?: string;
     price?: number;
@@ -30,9 +30,15 @@ class MockUpDB extends Dexie {
  * @returns 
  */
 export default function App() {
-
+    /**
+     * the reference of AG Grid
+     */
     const gridRef = useRef<any>(null);
 
+    /**
+     * create the db for this App and set the hooks 
+     * to integrate data between indexeddb and grid
+     */
     const db = new MockUpDB();
     db.apps.hook('creating', (primKey, obj, transaction) => {
         const gridApi = gridRef.current?.getCurrentGridApi();
@@ -42,6 +48,9 @@ export default function App() {
 
     });
 
+    /**
+     * make the columnDefinitions to draw the grid' columns
+     */
     const columnDefs = [
         { checkboxSelection: true, field: 'make', editable: true, onCellValueChanged: (e: CellChangedEvent) => { console.log('in ColumnDef ---> ', e) } },
         { field: 'model', editable: true, },
@@ -49,8 +58,7 @@ export default function App() {
     ];
 
     /**
-     * add more data into the table (indexdb), and 
-     * 
+     * add more data into the table (indexeddb)
      */
     const applyTransactionForAdd = () => {
 
@@ -80,6 +88,9 @@ export default function App() {
         })
     }
 
+    /**
+     * delete the selected data both grid and indexeddb
+     */
     const applyTransactionForDelete = () => {
         const gridApi = gridRef.current?.getCurrentGridApi();
         console.warn(gridApi.getSelectedNodes());
@@ -144,7 +155,7 @@ export default function App() {
 
     /**
      * set the cell value change event into the grid
-     * in most case, we synchronize the value with indexdb's row data.
+     * in most case, we synchronize the value with indexeddb's row data.
      * 
      * @param e 
      */
