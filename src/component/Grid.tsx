@@ -12,16 +12,29 @@ import { CellChangedEvent } from 'ag-grid-community/dist/lib/entities/rowNode';
 const LICENSE_KEY: string = env.get('REACT_APP_AGGRID_LICENSE_KEY').required().asString();
 LicenseManager.setLicenseKey(LICENSE_KEY);
 
+/**
+ * @author treetory@gmail.com
+ * 
+ * The props for Wrapped Grid
+ */
 export type GridProps = {
-    rowData?: any[],
     columnDefs: any[],
     onGridReady: (e: GridReadyEvent) => void,
     onCellValueChanged?: (e: CellChangedEvent) => void
 }
 
+/**
+ * @author treetory@gmail.com
+ * 
+ * The Grid Component to wrap the AG Grid
+ * 
+ * @param props 
+ * @param ref reference of AG Grid, to show the api externally.
+ * @returns React.Component
+ */
 const Grid = (props: GridProps, ref: any) => {
 
-    const { rowData, columnDefs, onGridReady, onCellValueChanged } = props;
+    const { columnDefs, onGridReady, onCellValueChanged } = props;
 
     const gridRef = useRef<AgGridReact>(null);
 
@@ -42,7 +55,7 @@ const Grid = (props: GridProps, ref: any) => {
     };
 
     return (
-        <div className="ag-theme-alpine" style={{ height: 400, width: 600 }}>
+        <div className="ag-theme-alpine" style={{ height: 400, width: 'inherit' }}>
             <AgGridReact
                 ref={gridRef}
                 rowData={[]}

@@ -4,12 +4,19 @@ import React, { useRef, useState, useEffect } from "react";
 import { GridReadyEvent } from "ag-grid-community";
 import { CellChangedEvent } from "ag-grid-community/dist/lib/entities/rowNode";
 
+/**
+ * @author treetory@gmail.com
+ * 
+ * The example to use the ag grid with react
+ * 
+ * @returns 
+ */
 export default function App() {
 
     const gridRef = useRef<any>(null);
 
     const columnDefs = [
-        { checkboxSelection: true, field: 'make', editable: true, onCellValueChanged: (params: any) => { console.log('column', params) } },
+        { checkboxSelection: true, field: 'make', editable: true, onCellValueChanged: (e: CellChangedEvent) => { console.log('in ColumnDef ---> ', e) } },
         { field: 'model', editable: false, },
         { field: 'price', editable: true, }
     ];
@@ -28,6 +35,11 @@ export default function App() {
         );
     }
 
+    /**
+     * Toggle the editable value(boolean) for specific columns
+     * 
+     * @param cols 
+     */
     const toggleEditable = (cols: string[]): void => {
         const grid = gridRef.current?.getCurrentGridApi();
         const _columnDefs: any[] = grid.getColumnDefs();
@@ -39,6 +51,12 @@ export default function App() {
         grid.setColumnDefs(_columnDefs);
     }
 
+    /**
+     * set the initial event when grid is ready.
+     * in most case, we set the initial data using this event handler
+     * 
+     * @param e 
+     */
     const onGridReady = (e: GridReadyEvent) => {
         const grid = gridRef.current?.getCurrentGridApi();
         grid.setRowData([
@@ -48,8 +66,14 @@ export default function App() {
         ]);
     }
 
+    /**
+     * set the cell value change event into the grid
+     * in most case, we synchronize the value with indexdb's row data.
+     * 
+     * @param e 
+     */
     const onCellValueChanged = (e: CellChangedEvent) => {
-        console.warn(e);
+        console.warn('in GridOption ---> ', e);
     }
 
     useEffect(() => {
