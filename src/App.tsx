@@ -1,8 +1,26 @@
 import "./styles.css";
-import { AgGrid } from "./component/Grid";
 import React, { useRef, useState, useEffect } from "react";
 import { GridReadyEvent } from "ag-grid-community";
 import { CellChangedEvent } from "ag-grid-community/dist/lib/entities/rowNode";
+import { AgGrid } from "./component/Grid";
+
+import Dexie, { Table } from 'dexie';
+interface MockUp {
+    rowId?: number;     // rowId is only use for indexdb. it's a indexed key.
+    make?: string;
+    model?: string;
+    price?: number;
+}
+
+class MockUpDB extends Dexie {
+    apps: Table<MockUp, number>;
+    constructor() {
+        super('MockUpDB');
+        this.version(1).stores({
+            apps: "++rowId, make, model, price"
+        })
+    }
+}
 
 /**
  * @author treetory@gmail.com
@@ -15,24 +33,57 @@ export default function App() {
 
     const gridRef = useRef<any>(null);
 
+    const db = new MockUpDB();
+    db.apps.hook('creating', (primKey, obj, transaction) => {
+        const gridApi = gridRef.current?.getCurrentGridApi();
+        gridApi.applyTransaction({ add: [obj] });
+    });
+    db.apps.hook('deleting', (primKey, obj, transaction) => {
+
+    });
+
     const columnDefs = [
         { checkboxSelection: true, field: 'make', editable: true, onCellValueChanged: (e: CellChangedEvent) => { console.log('in ColumnDef ---> ', e) } },
         { field: 'model', editable: true, },
         { field: 'price', editable: true, }
     ];
 
-    const applyTransaction = () => {
+    /**
+     * add more data into the table (indexdb), and 
+     * 
+     */
+    const applyTransactionForAdd = () => {
+
+        const addedRowData = [
+            { make: "Hyundai", model: "Grandeur", price: 15000 },
+            { make: "KIA", model: "K9", price: 12000 },
+            { make: "Tesla", model: "Model3", price: 92000 }
+        ];
+
+        // make the transaction to set the data into db's table
+        db.transaction('rw', db.apps, (transaction) => {
+            // check the data is already existed
+            return db.apps.bulkAdd(addedRowData)
+                .then(async cnt => {
+                    // if data is existed in indexdb, get the data and set it to grid
+                    // if (cnt > 0) {
+                    //     const rowData = (await db.apps.where('make').inAnyRange).map(row => {
+                    //         delete row.rowId;
+                    //         return row;
+                    //     });
+                    //     const gridApi = gridRef.current?.getCurrentGridApi();
+                    //     gridApi.applyTransaction({ add: rowData });
+                    // }
+                })
+        }).catch(e => {
+            console.error(e.stack || e);
+        })
+    }
+
+    const applyTransactionForDelete = () => {
         const gridApi = gridRef.current?.getCurrentGridApi();
-        gridApi.applyTransaction(
-            {
-                add:
-                    [
-                        { make: "Hyundai", model: "Grandeur", price: 15000 },
-                        { make: "KIA", model: "K9", price: 12000 },
-                        { make: "Tesla", model: "Model3", price: 92000 }
-                    ]
-            }
-        );
+        console.warn(gridApi.getSelectedNodes());
+        console.warn(gridApi.getSelectedRows());
     }
 
     /**
@@ -58,12 +109,37 @@ export default function App() {
      * @param e 
      */
     const onGridReady = (e: GridReadyEvent) => {
-        const grid = gridRef.current?.getCurrentGridApi();
-        grid.setRowData([
+        // get initial data from server
+        const initialRowData = [
             { make: "Toyota", model: "Celica", price: 35000 },
             { make: "Ford", model: "Mondeo", price: 32000 },
             { make: "Porsche", model: "Boxster", price: 72000 }
-        ]);
+        ];
+        // make the transaction to set the data into db's table
+        db.transaction('rw', db.apps, (transaction) => {
+            // check the data is already existed
+            return db.apps.count()
+                .then(cnt => {
+                    // if data is not existed in indexdb, add
+                    if (cnt <= 0) {
+                        db.apps.bulkAdd(initialRowData);
+                    }
+                    return Promise.resolve(cnt);
+                }).then(async cnt => {
+                    // if data is existed in indexdb, get the data and set it to grid
+                    if (cnt > 0) {
+                        const rowData = (await db.apps.where('rowId').above(0).toArray()).map(row => {
+                            delete row.rowId;
+                            return row;
+                        });
+                        const grid = gridRef.current?.getCurrentGridApi();
+                        grid.setRowData(rowData);
+                    }
+                })
+        }).catch(e => {
+            console.error(e.stack || e);
+        })
+
     }
 
     /**
@@ -74,6 +150,7 @@ export default function App() {
      */
     const onCellValueChanged = (e: CellChangedEvent) => {
         console.warn('in GridOption ---> ', e);
+        console.warn(db.name);
     }
 
     useEffect(() => {
@@ -91,10 +168,12 @@ export default function App() {
             />
             <div>
                 <span>
-                    <button onClick={applyTransaction}>applyTransaction</button>
+                    <button onClick={applyTransactionForAdd}>add more data</button>
+                    <button onClick={applyTransactionForDelete}>delete selected data</button>
                     <button onClick={() => {
                         toggleEditable(['make']);
                     }}>toggleEditable</button>
+
                 </span>
             </div>
         </div>

@@ -1,9 +1,9 @@
 import * as env from 'env-var';
 import React, { useState, useRef, useImperativeHandle, useMemo } from 'react';
+
 import { AgGridReact } from 'ag-grid-react';
 import 'ag-grid-enterprise';
 import { LicenseManager } from 'ag-grid-enterprise';
-
 import 'ag-grid-community/dist/styles/ag-grid.css';
 import 'ag-grid-community/dist/styles/ag-theme-alpine.css';
 import { GridReadyEvent } from 'ag-grid-community';
@@ -64,7 +64,7 @@ const Grid = (props: GridProps, ref: any) => {
                 }}
                 columnDefs={columnDefs}
                 rowSelection={'multiple'}
-                // singleClickEdit={true}
+                singleClickEdit={true}
                 // stopEditingWhenCellsLoseFocus={true}
                 // suppressClickEdit={false}
                 undoRedoCellEditing={true}
