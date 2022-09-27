@@ -64,7 +64,7 @@ const Grid = (props: GridProps, ref: any) => {
                 }}
                 columnDefs={columnDefs}
                 rowSelection={'multiple'}
-                singleClickEdit={true}
+                // singleClickEdit={true}
                 // stopEditingWhenCellsLoseFocus={true}
                 // suppressClickEdit={false}
                 undoRedoCellEditing={true}

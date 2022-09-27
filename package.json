@@ -1,7 +1,7 @@
 {
   "name": "react-ag-grid-component",
   "version": "1.0.0",
-  "description": "",
+  "description": "example to use react-ag-grid with dexie.js",
   "keywords": [],
   "main": "src/index.tsx",
   "dependencies": {
