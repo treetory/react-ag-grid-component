@@ -59,11 +59,19 @@ const Grid = (props: GridProps, ref: any) => {
             <AgGridReact
                 ref={gridRef}
                 rowData={[]}
+                defaultColDef={{
+                    editable: true
+                }}
+                columnDefs={columnDefs}
                 rowSelection={'multiple'}
                 singleClickEdit={true}
+                // stopEditingWhenCellsLoseFocus={true}
+                // suppressClickEdit={false}
+                undoRedoCellEditing={true}
+                undoRedoCellEditingLimit={20}
+                enableCellChangeFlash={true}
                 statusBar={statusBar}
                 onCellValueChanged={onCellValueChanged}
-                columnDefs={columnDefs}
                 onGridReady={onGridReady}
             >
             </AgGridReact>

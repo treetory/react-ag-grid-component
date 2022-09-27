@@ -17,7 +17,7 @@ export default function App() {
 
     const columnDefs = [
         { checkboxSelection: true, field: 'make', editable: true, onCellValueChanged: (e: CellChangedEvent) => { console.log('in ColumnDef ---> ', e) } },
-        { field: 'model', editable: false, },
+        { field: 'model', editable: true, },
         { field: 'price', editable: true, }
     ];
 
