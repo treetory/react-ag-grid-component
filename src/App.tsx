@@ -6,18 +6,111 @@ import { AgGrid } from "./component/Grid";
 
 import Dexie, { Table } from 'dexie';
 interface MockUp {
-    rowId?: number;     // rowId is only use for indexeddb. it's a indexed key.
+    rowId: number;     // rowId is only use for indexeddb. it's a indexed key.
     make?: string;
     model?: string;
     price?: number;
 }
 
+enum GRID_TRANSACTION_TYPE {
+    ADD = "add", UPDATE = "update", REMOVE = "remove"
+}
+
+export const foldr = <A, B>(f: (x: A, acc: B) => B, acc: B, [h, ...t]: A[]): B =>
+    h === undefined ? acc : f(h, foldr(f, acc, t));
+
+export const foldl = <A, B>(f: (x: A, acc: B) => B, acc: B, [h, ...t]: A[]): B =>
+    h === undefined ? acc : foldl(f, f(h, acc), t);
+
 class MockUpDB extends Dexie {
     apps: Table<MockUp, number>;
+    grid: any;
     constructor() {
         super('MockUpDB');
         this.version(1).stores({
-            apps: "++rowId, make, model, price"
+            apps: "rowId, make, model, price"
+        })
+    }
+
+    setGridRef(gridRef: any) {
+        this.grid = gridRef.current?.getCurrentGridApi();
+        this.apps.hook('creating', (primKey, obj, transaction) => {
+            let myTransaction = {
+                add: new Array(), update: new Array(), remove: new Array()
+            }
+            myTransaction.add.push(obj);
+            this.grid.applyTransaction(myTransaction);
+        });
+        this.apps.hook('updating', (primKey, obj, transaction) => {
+            let myTransaction = {
+                add: new Array(), update: new Array(), remove: new Array()
+            }
+            myTransaction.update.push(obj);
+            this.grid.applyTransaction(myTransaction);
+        });
+        this.apps.hook('deleting', (primKey, obj, transaction) => {
+            let myTransaction = {
+                add: new Array(), update: new Array(), remove: new Array()
+            }
+            myTransaction.remove.push(obj);
+            this.grid.applyTransaction(myTransaction);
+        });
+    }
+
+    integrateIndexedDbRowsToGrid = async () => {
+        if (await this.apps.count() > 0) {
+            const indexedDbRows = await this.apps.where('rowId').above(0).toArray();
+            this.grid.applyTransaction({ add: indexedDbRows });
+        }
+    }
+
+    addRowItems = (rows: MockUp[]) => {
+        this.transaction('rw', this.apps, async (transaction) => {
+            //     return this.apps.filter(app => rows.findIndex(
+            //         row => row.make === app.make
+            //             && row.model === app.model
+            //             && row.price === app.price
+            //             && app.rowId
+            //     ) > -1).primaryKeys()
+            //         .then(async primKeys => {
+            //             // console.warn(primKeys);
+            //             // if data is not existed in indexdb, add
+            //             if (primKeys.length <= 0) {
+            //                 primKeys = await this.apps.bulkAdd(rows, { allKeys: true });
+            //             }
+            //             return Promise.resolve(await this.apps.where('rowId').anyOf(primKeys).toArray());
+            //         }).then(async rowData => {
+            //             // console.warn(rowData)
+            //             // if data is existed in indexdb, get the data and set it to grid
+            //             let myTransaction = {
+            //                 add: new Array(), update: new Array(), remove: new Array()
+            //             }
+            //             this.grid.forEachNode((node: any) => {
+            //                 // const row = rowData.find(row => row.rowId === node.data.rowId);
+            //                 // console.warn(row);
+            //                 // if (row)
+            //                 //     myTransaction.update.push(row)
+            //                 // else
+            //                 //     myTransaction.add.push(row)
+            //             })
+            //             this.grid.applyTransaction(myTransaction);
+            //         })
+            // }).catch(e => {
+            //     console.error(e.stack || e);
+
+            // 1. indexedDb 에 확인한다.
+            // 2. indexedDb 에 있고, grid 에 없으면 add items
+            // 3. indexedDb 에 있고, grid 에 있으면 update items
+            // 4. grid 에 transaction 을 적용한다.
+            rows.forEach(async row => {
+                const app = await this.apps.get(row.rowId);
+                if (app) {
+                    this.apps.update(app.rowId, app);
+                } else {
+                    this.apps.add(row);
+
+                }
+            })
         })
     }
 }
@@ -33,25 +126,27 @@ export default function App() {
     /**
      * the reference of AG Grid
      */
-    const gridRef = useRef<any>(null);
+    const gridRef = useRef<any>();
 
     /**
      * create the db for this App and set the hooks 
      * to integrate data between indexeddb and grid
      */
     const db = new MockUpDB();
-    db.apps.hook('creating', (primKey, obj, transaction) => {
-        const gridApi = gridRef.current?.getCurrentGridApi();
-        gridApi.applyTransaction({ add: [obj] });
-    });
-    db.apps.hook('deleting', (primKey, obj, transaction) => {
-
-    });
+    // db.apps.hook('creating', (primKey, obj, transaction) => {
+    //     console.warn(primKey, obj, transaction);
+    //     const gridApi = gridRef.current?.getCurrentGridApi();
+    //     gridApi.applyTransaction({ add: [obj] });
+    // });
+    // db.apps.hook('deleting', (primKey, obj, transaction) => {
+    //     console.warn(obj);
+    // });
 
     /**
      * make the columnDefinitions to draw the grid' columns
      */
     const columnDefs = [
+        { field: 'rowId', hide: false },
         { checkboxSelection: true, field: 'make', editable: true, onCellValueChanged: (e: CellChangedEvent) => { console.log('in ColumnDef ---> ', e) } },
         { field: 'model', editable: true, },
         { field: 'price', editable: true, }
@@ -63,29 +158,13 @@ export default function App() {
     const applyTransactionForAdd = () => {
 
         const addedRowData = [
-            { make: "Hyundai", model: "Grandeur", price: 15000 },
-            { make: "KIA", model: "K9", price: 12000 },
-            { make: "Tesla", model: "Model3", price: 92000 }
+            { rowId: 4, make: "Hyundai", model: "Grandeur", price: 15000 },
+            { rowId: 5, make: "KIA", model: "K9", price: 12000 },
+            { rowId: 6, make: "Tesla", model: "Model3", price: 92000 }
         ];
 
         // make the transaction to set the data into db's table
-        db.transaction('rw', db.apps, (transaction) => {
-            // check the data is already existed
-            return db.apps.bulkAdd(addedRowData)
-                .then(async cnt => {
-                    // if data is existed in indexdb, get the data and set it to grid
-                    // if (cnt > 0) {
-                    //     const rowData = (await db.apps.where('make').inAnyRange).map(row => {
-                    //         delete row.rowId;
-                    //         return row;
-                    //     });
-                    //     const gridApi = gridRef.current?.getCurrentGridApi();
-                    //     gridApi.applyTransaction({ add: rowData });
-                    // }
-                })
-        }).catch(e => {
-            console.error(e.stack || e);
-        })
+        db.addRowItems(addedRowData);
     }
 
     /**
@@ -93,8 +172,18 @@ export default function App() {
      */
     const applyTransactionForDelete = () => {
         const gridApi = gridRef.current?.getCurrentGridApi();
-        console.warn(gridApi.getSelectedNodes());
-        console.warn(gridApi.getSelectedRows());
+        const selectedNodes: any[] = gridApi.getSelectedNodes();
+        const selectedRows: any[] = gridApi.getSelectedRows();
+        if (selectedNodes.length > 0) {
+            console.warn(selectedNodes, selectedRows);
+        }
+    }
+
+    /**
+     * close the db
+     */
+    const closeDB = () => {
+        db.delete();
     }
 
     /**
@@ -120,37 +209,18 @@ export default function App() {
      * @param e 
      */
     const onGridReady = (e: GridReadyEvent) => {
+        db.setGridRef(gridRef);
         // get initial data from server
         const initialRowData = [
-            { make: "Toyota", model: "Celica", price: 35000 },
-            { make: "Ford", model: "Mondeo", price: 32000 },
-            { make: "Porsche", model: "Boxster", price: 72000 }
+            { rowId: 1, make: "Toyota", model: "Celica", price: 35000 },
+            { rowId: 2, make: "Ford", model: "Mondeo", price: 32000 },
+            { rowId: 3, make: "Porsche", model: "Boxster", price: 72000 }
         ];
         // make the transaction to set the data into db's table
-        db.transaction('rw', db.apps, (transaction) => {
-            // check the data is already existed
-            return db.apps.count()
-                .then(cnt => {
-                    // if data is not existed in indexdb, add
-                    if (cnt <= 0) {
-                        db.apps.bulkAdd(initialRowData);
-                    }
-                    return Promise.resolve(cnt);
-                }).then(async cnt => {
-                    // if data is existed in indexdb, get the data and set it to grid
-                    if (cnt > 0) {
-                        const rowData = (await db.apps.where('rowId').above(0).toArray()).map(row => {
-                            delete row.rowId;
-                            return row;
-                        });
-                        const grid = gridRef.current?.getCurrentGridApi();
-                        grid.setRowData(rowData);
-                    }
-                })
-        }).catch(e => {
-            console.error(e.stack || e);
-        })
+        db.integrateIndexedDbRowsToGrid();
 
+        if (initialRowData.length > 0)
+            db.addRowItems(initialRowData);
     }
 
     /**
@@ -179,6 +249,7 @@ export default function App() {
             />
             <div>
                 <span>
+                    <button onClick={closeDB}>closeDB</button>
                     <button onClick={applyTransactionForAdd}>add more data</button>
                     <button onClick={applyTransactionForDelete}>delete selected data</button>
                     <button onClick={() => {
