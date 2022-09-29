@@ -1,120 +1,9 @@
 import "./styles.css";
 import React, { useRef, useState, useEffect } from "react";
-import { GridReadyEvent } from "ag-grid-community";
+import { CellValueChangedEvent, GridReadyEvent, RowValueChangedEvent } from "ag-grid-community";
 import { CellChangedEvent } from "ag-grid-community/dist/lib/entities/rowNode";
 import { AgGrid } from "./component/Grid";
-
-import Dexie, { Table } from 'dexie';
-interface MockUp {
-    rowId: number;     // rowId is only use for indexeddb. it's a indexed key.
-    make?: string;
-    model?: string;
-    price?: number;
-}
-
-enum GRID_TRANSACTION_TYPE {
-    ADD = "add", UPDATE = "update", REMOVE = "remove"
-}
-
-export const foldr = <A, B>(f: (x: A, acc: B) => B, acc: B, [h, ...t]: A[]): B =>
-    h === undefined ? acc : f(h, foldr(f, acc, t));
-
-export const foldl = <A, B>(f: (x: A, acc: B) => B, acc: B, [h, ...t]: A[]): B =>
-    h === undefined ? acc : foldl(f, f(h, acc), t);
-
-class MockUpDB extends Dexie {
-    apps: Table<MockUp, number>;
-    grid: any;
-    constructor() {
-        super('MockUpDB');
-        this.version(1).stores({
-            apps: "rowId, make, model, price"
-        })
-    }
-
-    setGridRef(gridRef: any) {
-        this.grid = gridRef.current?.getCurrentGridApi();
-        this.apps.hook('creating', (primKey, obj, transaction) => {
-            let myTransaction = {
-                add: new Array(), update: new Array(), remove: new Array()
-            }
-            myTransaction.add.push(obj);
-            this.grid.applyTransaction(myTransaction);
-        });
-        this.apps.hook('updating', (primKey, obj, transaction) => {
-            let myTransaction = {
-                add: new Array(), update: new Array(), remove: new Array()
-            }
-            myTransaction.update.push(obj);
-            this.grid.applyTransaction(myTransaction);
-        });
-        this.apps.hook('deleting', (primKey, obj, transaction) => {
-            let myTransaction = {
-                add: new Array(), update: new Array(), remove: new Array()
-            }
-            myTransaction.remove.push(obj);
-            this.grid.applyTransaction(myTransaction);
-        });
-    }
-
-    integrateIndexedDbRowsToGrid = async () => {
-        if (await this.apps.count() > 0) {
-            const indexedDbRows = await this.apps.where('rowId').above(0).toArray();
-            this.grid.applyTransaction({ add: indexedDbRows });
-        }
-    }
-
-    addRowItems = (rows: MockUp[]) => {
-        this.transaction('rw', this.apps, async (transaction) => {
-            //     return this.apps.filter(app => rows.findIndex(
-            //         row => row.make === app.make
-            //             && row.model === app.model
-            //             && row.price === app.price
-            //             && app.rowId
-            //     ) > -1).primaryKeys()
-            //         .then(async primKeys => {
-            //             // console.warn(primKeys);
-            //             // if data is not existed in indexdb, add
-            //             if (primKeys.length <= 0) {
-            //                 primKeys = await this.apps.bulkAdd(rows, { allKeys: true });
-            //             }
-            //             return Promise.resolve(await this.apps.where('rowId').anyOf(primKeys).toArray());
-            //         }).then(async rowData => {
-            //             // console.warn(rowData)
-            //             // if data is existed in indexdb, get the data and set it to grid
-            //             let myTransaction = {
-            //                 add: new Array(), update: new Array(), remove: new Array()
-            //             }
-            //             this.grid.forEachNode((node: any) => {
-            //                 // const row = rowData.find(row => row.rowId === node.data.rowId);
-            //                 // console.warn(row);
-            //                 // if (row)
-            //                 //     myTransaction.update.push(row)
-            //                 // else
-            //                 //     myTransaction.add.push(row)
-            //             })
-            //             this.grid.applyTransaction(myTransaction);
-            //         })
-            // }).catch(e => {
-            //     console.error(e.stack || e);
-
-            // 1. indexedDb 에 확인한다.
-            // 2. indexedDb 에 있고, grid 에 없으면 add items
-            // 3. indexedDb 에 있고, grid 에 있으면 update items
-            // 4. grid 에 transaction 을 적용한다.
-            rows.forEach(async row => {
-                const app = await this.apps.get(row.rowId);
-                if (app) {
-                    this.apps.update(app.rowId, app);
-                } else {
-                    this.apps.add(row);
-
-                }
-            })
-        })
-    }
-}
-
+import { MockUpDB } from "./dexie/MockUpDB";
 /**
  * @author treetory@gmail.com
  * 
@@ -133,14 +22,6 @@ export default function App() {
      * to integrate data between indexeddb and grid
      */
     const db = new MockUpDB();
-    // db.apps.hook('creating', (primKey, obj, transaction) => {
-    //     console.warn(primKey, obj, transaction);
-    //     const gridApi = gridRef.current?.getCurrentGridApi();
-    //     gridApi.applyTransaction({ add: [obj] });
-    // });
-    // db.apps.hook('deleting', (primKey, obj, transaction) => {
-    //     console.warn(obj);
-    // });
 
     /**
      * make the columnDefinitions to draw the grid' columns
@@ -164,7 +45,7 @@ export default function App() {
         ];
 
         // make the transaction to set the data into db's table
-        db.addRowItems(addedRowData);
+        db.addRowDatas(addedRowData);
     }
 
     /**
@@ -173,17 +54,18 @@ export default function App() {
     const applyTransactionForDelete = () => {
         const gridApi = gridRef.current?.getCurrentGridApi();
         const selectedNodes: any[] = gridApi.getSelectedNodes();
-        const selectedRows: any[] = gridApi.getSelectedRows();
+        // const selectedRows: any[] = gridApi.getSelectedRows();
         if (selectedNodes.length > 0) {
-            console.warn(selectedNodes, selectedRows);
+            // console.warn(selectedNodes, selectedRows);
+            db.deleteRowDatas(selectedNodes);
         }
     }
 
     /**
      * close the db
      */
-    const closeDB = () => {
-        db.delete();
+    const clearDB = () => {
+        db.apps.clear();
     }
 
     /**
@@ -220,18 +102,33 @@ export default function App() {
         db.integrateIndexedDbRowsToGrid();
 
         if (initialRowData.length > 0)
-            db.addRowItems(initialRowData);
+            db.addRowDatas(initialRowData);
     }
 
     /**
      * set the cell value change event into the grid
+     * but we send the whole row data that have been updated
+     * because we still need the primKey of table
+     * and need to create the Object to update. so need the whole shaped data.
+     * 
      * in most case, we synchronize the value with indexeddb's row data.
      * 
      * @param e 
      */
-    const onCellValueChanged = (e: CellChangedEvent) => {
-        console.warn('in GridOption ---> ', e);
-        console.warn(db.name);
+    const onCellValueChanged = (e: CellValueChangedEvent) => {
+        db.updateCellData(e.data);
+    }
+
+    /**
+     * 
+     * 이 이벤트가 언제 발생하는지 확인할 필요가 있다.
+     * 현재 cell 의 데이터를 변화시킨 것이 여기에 영향을 미치진 않는다.
+     * 아마, row edit mode 로 동작시킨 것이 여기에 영향을 미칠 것 같다.
+     * 
+     * @param e 
+     */
+    const onRowValueChanged = (e: RowValueChangedEvent) => {
+        db.updateRowData(e.data);
     }
 
     useEffect(() => {
@@ -246,10 +143,11 @@ export default function App() {
                 columnDefs={columnDefs}
                 onGridReady={onGridReady}
                 onCellValueChanged={onCellValueChanged}
+                onRowValueChanged={onRowValueChanged}
             />
             <div>
                 <span>
-                    <button onClick={closeDB}>closeDB</button>
+                    <button onClick={clearDB}>clearDB</button>
                     <button onClick={applyTransactionForAdd}>add more data</button>
                     <button onClick={applyTransactionForDelete}>delete selected data</button>
                     <button onClick={() => {

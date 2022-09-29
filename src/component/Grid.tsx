@@ -8,6 +8,8 @@ import 'ag-grid-community/dist/styles/ag-grid.css';
 import 'ag-grid-community/dist/styles/ag-theme-alpine.css';
 import { GridReadyEvent } from 'ag-grid-community';
 import { CellChangedEvent } from 'ag-grid-community/dist/lib/entities/rowNode';
+import { RowValueChangedEvent, CellValueChangedEvent } from 'ag-grid-community/dist/lib/events';
+
 
 const LICENSE_KEY: string = env.get('REACT_APP_AGGRID_LICENSE_KEY').required().asString();
 LicenseManager.setLicenseKey(LICENSE_KEY);
@@ -20,7 +22,8 @@ LicenseManager.setLicenseKey(LICENSE_KEY);
 export type GridProps = {
     columnDefs: any[],
     onGridReady: (e: GridReadyEvent) => void,
-    onCellValueChanged?: (e: CellChangedEvent) => void
+    onRowValueChanged?: (e: RowValueChangedEvent) => void;
+    onCellValueChanged?: (e: CellValueChangedEvent) => void;
 }
 
 /**
@@ -58,6 +61,7 @@ const Grid = (props: GridProps, ref: any) => {
         <div className="ag-theme-alpine" style={{ height: 400, width: 'inherit' }}>
             <AgGridReact
                 ref={gridRef}
+                getRowId={(params) => params.data.rowId}
                 rowData={[]}
                 defaultColDef={{
                     editable: true
