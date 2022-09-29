@@ -27,7 +27,7 @@ export default function App() {
      * make the columnDefinitions to draw the grid' columns
      */
     const columnDefs = [
-        { field: 'rowId', hide: false },
+        { field: 'rowId', hide: false, editable: false },
         { checkboxSelection: true, field: 'make', editable: true, onCellValueChanged: (e: CellChangedEvent) => { console.log('in ColumnDef ---> ', e) } },
         { field: 'model', editable: true, },
         { field: 'price', editable: true, }
