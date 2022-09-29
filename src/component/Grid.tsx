@@ -7,7 +7,6 @@ import { LicenseManager } from 'ag-grid-enterprise';
 import 'ag-grid-community/dist/styles/ag-grid.css';
 import 'ag-grid-community/dist/styles/ag-theme-alpine.css';
 import { GridReadyEvent } from 'ag-grid-community';
-import { CellChangedEvent } from 'ag-grid-community/dist/lib/entities/rowNode';
 import { RowValueChangedEvent, CellValueChangedEvent } from 'ag-grid-community/dist/lib/events';
 
 
