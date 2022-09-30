@@ -21,7 +21,7 @@ export default function App() {
      * create the db for this App and set the hooks 
      * to integrate data between indexeddb and grid
      */
-    const db = new MockUpDB();
+    const db = new MockUpDB({ apps: "rowId, make, model, price" });
 
     /**
      * make the columnDefinitions to draw the grid' columns
