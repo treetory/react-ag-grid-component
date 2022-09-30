@@ -18,14 +18,17 @@ export const foldr = <A, B>(f: (x: A, acc: B) => B, acc: B, [h, ...t]: A[]): B =
 export const foldl = <A, B>(f: (x: A, acc: B) => B, acc: B, [h, ...t]: A[]): B =>
     h === undefined ? acc : foldl(f, f(h, acc), t);
 
+/**
+ * @author  treetory@gmail.com
+ * 
+ * to test Dexie.js integrating data between AG Grid and indexed DB
+ */
 export class MockUpDB extends Dexie {
     apps: Table<MockUp, number>;
     grid: any;
-    constructor() {
+    constructor(schema: { [tableName: string]: string | null; }) {
         super('MockUpDB');
-        this.version(1).stores({
-            apps: "rowId, make, model, price"
-        })
+        this.version(1).stores(schema)
     }
 
     setGridRef(gridRef: any) {
