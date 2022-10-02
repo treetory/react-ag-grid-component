@@ -1,7 +1,6 @@
 import "./styles.css";
 import React, { useRef, useState, useEffect } from "react";
 import { CellValueChangedEvent, GridReadyEvent, RowValueChangedEvent } from "ag-grid-community";
-import { CellChangedEvent } from "ag-grid-community/dist/lib/entities/rowNode";
 import { AgGrid } from "./component/Grid";
 import { MockUpDB } from "./dexie/MockUpDB";
 /**
@@ -28,7 +27,7 @@ export default function App() {
      */
     const columnDefs = [
         { field: 'rowId', hide: false, editable: false },
-        { checkboxSelection: true, field: 'make', editable: true, onCellValueChanged: (e: CellChangedEvent) => { console.log('in ColumnDef ---> ', e) } },
+        { checkboxSelection: true, field: 'make', editable: true, onCellValueChanged: (e: CellValueChangedEvent) => { console.log('in ColumnDef ---> ', e) } },
         { field: 'model', editable: true, },
         { field: 'price', editable: true, }
     ];
