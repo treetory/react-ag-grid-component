@@ -36,6 +36,8 @@ export type GridProps = {
  */
 const Grid = (props: GridProps, ref: any) => {
 
+    const displayName = 'Grid';
+
     const { columnDefs, onGridReady, onCellValueChanged } = props;
 
     const gridRef = useRef<AgGridReact>(null);
@@ -81,5 +83,5 @@ const Grid = (props: GridProps, ref: any) => {
         </div>
     )
 }
-Grid.displayName = 'Grid';
 export const AgGrid = React.forwardRef(Grid);
+AgGrid.displayName = 'AGGrid';

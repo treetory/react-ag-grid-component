@@ -46,7 +46,7 @@ export class MockUpDB extends Dexie {
          * creating hook is occured when execute the 'update' operator of Dexie' Table.
          */
         this.apps.hook('updating', (modification: Object, primKey: number, obj: MockUp, transaction: Transaction) => {
-            let updated = Object.assign(obj, modification);
+            const updated = Object.assign(obj, modification);
             this.grid.applyTransaction({ update: [updated] });
         });
         /**
